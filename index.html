@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>생성형 AI 실무 가이드 · SCM AI 아카데미</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F1F3F9;
+  --paper-2:#E9ECF6;
+  --ink:#20242F;
+  --ink-soft:#565B72;
+  --line:#DDE1EE;
+  --card:#FFFFFF;
+  --blue:#3454D1;
+  --blue-deep:#233A93;
+  --coral:#FF6F59;
+  --mint:#1FA97F;
+  --purple:#7C5CFC;
+  --yellow:#FFC93C;
+  --shadow: 0 8px 28px rgba(35,44,90,0.08);
+  --radius: 18px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Noto Sans KR', sans-serif;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+img,svg{display:block;max-width:100%;}
+h1,h2,h3{font-family:'Gowun Batang', serif; margin:0; line-height:1.35;}
+p{margin:0;}
+a{color:inherit;}
+.wrap{max-width:920px; margin:0 auto; padding:0 24px;}
+.hand{font-family:'Gaegu', cursive;}
+
+/* ---------- NAV ---------- */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:rgba(241,243,249,0.86);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{
+  max-width:920px; margin:0 auto; padding:14px 24px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+}
+.nav-logo{font-family:'Gowun Batang',serif; font-weight:700; font-size:17px; white-space:nowrap;}
+.nav-logo span{color:var(--blue);}
+.nav-chips{display:flex; gap:6px; overflow-x:auto; scrollbar-width:none;}
+.nav-chips::-webkit-scrollbar{display:none;}
+.nav-chip{
+  flex:0 0 auto;
+  font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  border:1px solid var(--line); background:var(--card);
+  border-radius:999px; padding:6px 12px; text-decoration:none;
+  transition:all .18s ease;
+}
+.nav-chip:hover{border-color:var(--blue); color:var(--blue);}
+.nav-chip:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+
+/* ---------- HERO ---------- */
+.hero{padding:64px 0 40px; position:relative;}
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:13px; font-weight:700; color:var(--blue-deep);
+  background:#E4E9FB; border-radius:999px; padding:6px 14px; margin-bottom:22px;
+}
+.eyebrow::before{content:"●"; color:var(--coral); font-size:8px;}
+.hero h1{font-size:clamp(32px,5.4vw,50px); font-weight:700; letter-spacing:-0.01em;}
+.hero h1 em{font-style:normal; color:var(--blue); position:relative; white-space:nowrap;}
+.hero-sub{margin-top:18px; font-size:17px; color:var(--ink-soft); max-width:600px;}
+
+.chatline{margin-top:44px; display:flex; flex-direction:column; gap:12px; max-width:640px;}
+.bubble{
+  padding:13px 18px; border-radius:20px; font-size:15px; max-width:78%;
+  opacity:0; transform:translateY(10px);
+  animation:pop .5s ease forwards;
+}
+.bubble.me{
+  align-self:flex-end; background:var(--blue); color:#fff;
+  border-bottom-right-radius:6px; animation-delay:.1s;
+}
+.bubble.ai{
+  align-self:flex-start; background:var(--card); border:1px solid var(--line);
+  border-bottom-left-radius:6px; box-shadow:var(--shadow);
+  animation-delay:.6s;
+}
+.bubble.ai b{color:var(--blue-deep);}
+.bubble.me.q2{animation-delay:1.15s;}
+.bubble.ai.a2{animation-delay:1.65s;}
+@keyframes pop{to{opacity:1; transform:translateY(0);}}
+@media (prefers-reduced-motion:reduce){
+  .bubble{animation:none; opacity:1; transform:none;}
+}
+
+/* ---------- SECTION SHELL ---------- */
+section{padding:56px 0;}
+.section-head{display:flex; align-items:baseline; gap:14px; margin-bottom:28px;}
+.section-num{
+  font-family:'Gowun Batang',serif; font-weight:700; font-size:15px; color:#fff;
+  background:var(--blue); width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+}
+.section-head h2{font-size:clamp(24px,3.4vw,32px);}
+.section-tag{font-size:13px; color:var(--ink-soft); margin-top:4px;}
+
+.reveal{opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease;}
+.reveal.in{opacity:1; transform:translateY(0);}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1; transform:none;}}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);}
+.divider{height:1px; background:linear-gradient(to right, transparent, var(--line), transparent); margin:0 auto; max-width:920px;}
+
+/* ---------- CONCEPT (sec2) ---------- */
+.concept-grid{display:grid; grid-template-columns:1.1fr 1fr; gap:22px; align-items:stretch; margin-top:26px;}
+@media (max-width:720px){.concept-grid{grid-template-columns:1fr;}}
+.metaphor-card{background:linear-gradient(160deg,#EFE9FF,#F1F3F9); border:1px solid var(--line); border-radius:var(--radius); padding:28px; display:flex; flex-direction:column; gap:14px; justify-content:center;}
+.metaphor-card .tiny{font-size:12px; font-weight:700; color:var(--purple);}
+.metaphor-card h3{font-size:21px;}
+.metaphor-card p{font-size:14.5px; color:var(--ink-soft);}
+.stackfig{display:flex; gap:6px; align-items:flex-end; margin-top:6px;}
+.stackfig div{width:14px; background:var(--purple); border-radius:3px 3px 0 0; opacity:.8;}
+
+.compare-col{display:flex; flex-direction:column; gap:14px;}
+.compare-bubble{border-radius:16px; padding:16px 18px; border:1px solid var(--line); background:var(--card);}
+.compare-bubble .who{font-size:11.5px; font-weight:700; letter-spacing:.03em;}
+.compare-bubble.trad .who{color:var(--ink-soft);}
+.compare-bubble.gen .who{color:var(--blue);}
+.compare-bubble p{margin-top:6px; font-size:14.5px;}
+
+/* feature 3-card (학습/확률적생성/범용성) */
+.feat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:34px;}
+@media (max-width:780px){.feat-grid{grid-template-columns:1fr;}}
+.feat-card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:var(--shadow);}
+.feat-icon{width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; margin-bottom:12px;}
+.feat-card h4{font-size:15px; font-family:'Noto Sans KR'; font-weight:700;}
+.feat-easy{display:inline-block; font-size:11px; font-weight:700; color:var(--blue-deep); background:#E4E9FB; padding:4px 9px; border-radius:6px; margin:8px 0;}
+.feat-card p.desc{font-size:13.2px; color:var(--ink-soft);}
+
+/* ---------- PROCESS FLOW (5 steps) ---------- */
+.flow{display:flex; flex-direction:column; margin-top:34px;}
+.flow-step{display:grid; grid-template-columns:44px 1fr; gap:18px; padding:26px 0; border-top:1px solid var(--line); position:relative;}
+.flow-step:first-child{border-top:none;}
+.flow-num{width:36px; height:36px; border-radius:50%; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; font-family:'Gowun Batang',serif; position:relative; z-index:2;}
+.flow-step:not(:last-child)::before{content:""; position:absolute; left:18px; top:60px; bottom:-14px; width:2px; background:var(--line);}
+.flow-body h4{font-size:16.5px; font-family:'Noto Sans KR'; font-weight:700; margin-bottom:6px;}
+.flow-tagline{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--mint); background:#DFF6EC; padding:5px 11px; border-radius:8px; margin-bottom:10px;}
+.flow-body p.desc{font-size:14px; color:var(--ink-soft);}
+.example{margin-top:14px; padding:16px 18px; background:var(--paper); border:1px solid var(--line); border-radius:12px;}
+.example-label{font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px;}
+.token-row{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;}
+.token{background:#E4E9FB; color:var(--blue-deep); font-size:12px; font-weight:700; padding:5px 10px; border-radius:6px;}
+.example-note{font-size:12px; color:var(--ink-soft); margin-top:6px;}
+.vec-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.vec-src{background:var(--blue); color:#fff; font-weight:700; font-size:12.5px; padding:6px 11px; border-radius:7px;}
+.vec-arrow{color:var(--ink-soft);}
+.vec-nums{display:flex; gap:5px; flex-wrap:wrap;}
+.vec-num{background:var(--card); border:1px solid var(--line); font-family:monospace; font-size:12px; font-weight:600; padding:5px 8px; border-radius:6px;}
+.think-bubble{margin-top:12px; padding:13px 15px; background:var(--card); border:1px dashed var(--line); border-radius:10px; font-size:13px; color:var(--ink-soft); font-style:italic;}
+.prob-row{display:flex; flex-direction:column; gap:8px;}
+.prob-item{display:flex; align-items:center; gap:10px; font-size:13px;}
+.prob-label{width:88px; flex:0 0 auto; font-weight:700;}
+.prob-bar-bg{flex:1; height:10px; background:var(--card); border:1px solid var(--line); border-radius:999px; overflow:hidden;}
+.prob-bar-fill{height:100%; background:var(--blue); border-radius:999px;}
+.prob-pct{width:36px; text-align:right; font-size:12px; color:var(--ink-soft);}
+.gen-steps{display:flex; flex-direction:column; gap:6px;}
+.gen-line{font-family:monospace; font-size:13px; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:9px 13px; color:var(--ink-soft);}
+.gen-line .added{color:var(--blue); font-weight:700;}
+
+.gen-demo{margin-top:34px; border:1px dashed var(--line); border-radius:16px; padding:22px; background:var(--card); box-shadow:var(--shadow);}
+.gen-demo-head{display:flex; flex-direction:column; gap:4px; margin-bottom:14px;}
+.gen-demo-desc{font-size:12.5px; color:var(--ink-soft);}
+.gen-output{font-family:'Gowun Batang',serif; font-size:16.5px; background:var(--blue-deep); color:#fff; border-radius:12px; padding:14px 18px; min-height:24px; border-bottom-left-radius:4px;}
+.gen-output #genAdded span{color:var(--yellow);}
+.cursor{display:inline-block; margin-left:2px; animation:blink 1s step-start infinite;}
+@keyframes blink{50%{opacity:0;}}
+.gen-candidates{display:flex; flex-direction:column; gap:8px; margin-top:16px; min-height:8px;}
+.cand-row{display:flex; align-items:center; gap:10px; font-size:13px;}
+.cand-word{width:76px; flex:0 0 auto; font-weight:700; color:var(--ink);}
+.cand-bar-wrap{flex:1; background:var(--paper-2); border-radius:999px; height:10px; overflow:hidden;}
+.cand-bar{height:100%; background:var(--blue); width:0%; border-radius:999px; transition:width .5s ease;}
+.cand-row.winner .cand-bar{background:var(--mint);}
+.cand-row.winner .cand-word{color:var(--mint);}
+.cand-pct{width:34px; flex:0 0 auto; text-align:right; color:var(--ink-soft); font-size:12px;}
+.gen-btn{margin-top:16px; border:none; background:var(--blue); color:#fff; font-weight:700; font-size:13.5px; padding:11px 20px; border-radius:999px; cursor:pointer; font-family:inherit; transition:background .15s ease;}
+.gen-btn:hover{background:var(--blue-deep);}
+.gen-btn:disabled{background:#B9C2DE; cursor:default;}
+.gen-btn:focus-visible{outline:2px solid var(--blue-deep); outline-offset:2px;}
+
+.conclusion{margin-top:30px; background:var(--blue-deep); color:#fff; border-radius:16px; padding:24px 26px;}
+.conclusion .c-label{font-size:11px; font-weight:700; opacity:.7; text-transform:uppercase; letter-spacing:.04em; margin-bottom:8px;}
+.conclusion p{font-size:14.5px; line-height:1.8; opacity:.95;}
+.conclusion strong{color:#A9C0FF;}
+
+/* ---------- SEC3 AI CARDS ---------- */
+.ai-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:26px;}
+@media (max-width:820px){.ai-grid{grid-template-columns:1fr;}}
+.ai-card{border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); background:var(--card); box-shadow:var(--shadow); display:flex; flex-direction:column;}
+.ai-head{padding:22px 22px 18px; color:#fff;}
+.ai-card.gpt .ai-head{background:var(--coral);}
+.ai-card.claude .ai-head{background:var(--mint);}
+.ai-card.gemini .ai-head{background:var(--purple);}
+.ai-head .name{font-size:19px; font-family:'Gowun Batang',serif; font-weight:700;}
+.ai-head .maker{font-size:12px; opacity:.85; margin-top:2px;}
+.ai-head .model{margin-top:12px; font-size:11.5px; font-weight:700; background:rgba(255,255,255,.22); display:inline-block; padding:5px 10px; border-radius:8px;}
+.ai-body{padding:20px 22px; display:flex; flex-direction:column; gap:4px;}
+.ai-persona{font-size:13.5px; font-weight:700; font-style:italic; color:var(--ink); padding-bottom:14px; border-bottom:1px dashed var(--line); margin-bottom:6px;}
+.ai-label{font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em; margin-top:10px;}
+.ai-body p.text{font-size:13.3px; color:var(--ink-soft); margin-top:5px;}
+.ai-caution{margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-size:12px; color:#9A5B12; line-height:1.6;}
+.ai-caution b{font-weight:700;}
+
+.usecase-table{margin-top:30px; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); background:var(--card);}
+.use-row{display:grid; grid-template-columns:1.3fr 1fr; border-top:1px solid var(--line);}
+.use-row:first-child{border-top:none; background:var(--paper-2);}
+.use-row div{padding:12px 18px; font-size:13.5px;}
+.use-row:first-child div{font-weight:700; font-size:11.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.03em;}
+.use-row span.who{font-weight:700; color:var(--blue);}
+.note{margin-top:18px; font-size:13px; color:var(--ink-soft); border-left:3px solid var(--yellow); padding-left:12px;}
+.source-note{margin-top:10px; font-size:12px; color:var(--ink-soft);}
+.source-note a{color:var(--blue); text-decoration:underline;}
+
+/* ---------- SEC4 프롬프트 ---------- */
+.formula{display:flex; flex-wrap:wrap; gap:10px; margin:24px 0 6px;}
+.formula .step{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; flex:1 1 200px; box-shadow:var(--shadow);}
+.formula .step .n{font-family:'Gowun Batang',serif; font-weight:700; color:var(--blue); font-size:13px;}
+.formula .step h4{margin-top:4px; font-size:15px; font-family:'Noto Sans KR'; font-weight:700;}
+.formula .step p{font-size:13px; color:var(--ink-soft); margin-top:4px;}
+
+.check-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-top:32px;}
+@media (max-width:700px){.check-grid{grid-template-columns:1fr;}}
+.check-item{display:flex; gap:13px; padding:17px; border:1px solid var(--line); border-radius:14px; background:var(--card);}
+.check-mark{width:26px; height:26px; border-radius:50%; background:#E4E9FB; color:var(--blue); display:flex; align-items:center; justify-content:center; flex:0 0 auto; font-size:13px; font-weight:800;}
+.check-item strong{font-size:14.5px; display:block; margin-bottom:3px;}
+.check-item span{font-size:13px; color:var(--ink-soft);}
+
+.builder{margin-top:32px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:26px;}
+.builder h3{font-size:17px; margin-bottom:16px;}
+.builder-row{margin-bottom:16px;}
+.builder-row .lab{font-size:12px; font-weight:700; color:var(--blue-deep); margin-bottom:8px;}
+.opt-group{display:flex; flex-wrap:wrap; gap:8px;}
+.opt{border:1px solid var(--line); background:var(--paper); border-radius:999px; padding:8px 14px; font-size:13px; cursor:pointer; font-family:inherit; color:var(--ink); transition:all .15s ease;}
+.opt:hover{border-color:var(--blue);}
+.opt.active{background:var(--blue); color:#fff; border-color:var(--blue);}
+.opt:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+.builder-out{margin-top:20px; background:var(--blue-deep); color:#fff; border-radius:16px; padding:18px 20px; font-size:14.5px; border-bottom-left-radius:4px;}
+.builder-out .tiny{font-size:11px; opacity:.7; font-weight:700; letter-spacing:.04em; margin-bottom:6px;}
+
+.before-after{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:30px;}
+@media (max-width:640px){.before-after{grid-template-columns:1fr;}}
+.ba-card{border-radius:16px; padding:18px; border:1px solid var(--line);}
+.ba-card.bad{background:#FFF1EE;}
+.ba-card.good{background:#EAF8F1;}
+.ba-card .lbl{font-size:11px; font-weight:700;}
+.ba-card.bad .lbl{color:var(--coral);}
+.ba-card.good .lbl{color:var(--mint);}
+.ba-card p{margin-top:8px; font-size:14px;}
+.ba-card .ai-react{display:block; margin-top:8px; font-size:12px; color:#B5482E; font-style:italic;}
+
+/* ---------- SEC5 생각할거리 ---------- */
+.think-grid{display:flex; flex-direction:column; gap:16px; margin-top:26px;}
+.think-card{border-radius:var(--radius); border:1px solid var(--line); background:var(--card); padding:22px; box-shadow:var(--shadow);}
+.think-card h3{font-size:17px; display:flex; align-items:center; gap:8px;}
+.think-card h3 .mk{width:8px; height:8px; border-radius:50%; background:var(--yellow); flex:0 0 auto;}
+.think-card p{font-size:14.5px; color:var(--ink-soft); margin-top:8px;}
+.halluc-toggle{margin-top:14px; border:1px dashed var(--line); border-radius:12px; padding:14px; cursor:pointer; background:var(--paper);}
+.halluc-toggle .ask{font-size:14px; font-weight:700; color:var(--blue-deep);}
+.halluc-toggle .reveal-text{display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:10px;}
+.halluc-toggle.open .reveal-text{display:block;}
+.halluc-toggle .arrow{float:right; transition:transform .2s ease;}
+.halluc-toggle.open .arrow{transform:rotate(180deg);}
+
+/* ---------- SEC6 적용 사례 ---------- */
+.case{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); margin-top:26px;}
+.case-top{padding:28px 28px 24px; color:#fff; display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap;}
+.case-top .case-tag{font-size:12px; font-weight:700; opacity:.75; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em;}
+.case-top h3{font-size:20px;}
+.case-status{font-size:11.5px; font-weight:700; background:rgba(255,255,255,.2); padding:6px 13px; border-radius:999px; white-space:nowrap;}
+.case-body{padding:26px 28px 30px; background:var(--card);}
+.stat-banner{display:flex; align-items:center; gap:22px; background:var(--paper-2); border-radius:14px; padding:18px 22px; margin-bottom:24px; flex-wrap:wrap;}
+.stat-num{display:flex; align-items:baseline; gap:9px; font-weight:800; font-family:'Gowun Batang',serif;}
+.stat-num .from{font-size:19px; opacity:.5; text-decoration:line-through; color:var(--ink-soft);}
+.stat-num .arrow{font-size:16px; color:var(--ink-soft);}
+.stat-num .to{font-size:28px; color:var(--blue);}
+.stat-desc{font-size:13px; color:var(--ink-soft); max-width:36ch;}
+.case-cols{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:26px;}
+@media (max-width:680px){.case-cols{grid-template-columns:1fr;}}
+.case-cols h4{font-size:13px; font-weight:700; color:var(--blue); margin-bottom:6px;}
+.case-cols p{font-size:13.7px; color:var(--ink-soft);}
+.case-flow{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+@media (max-width:760px){.case-flow{grid-template-columns:1fr;}}
+.case-flow-item{border:1px solid var(--line); border-radius:12px; padding:16px 14px; background:var(--paper); position:relative;}
+.case-flow-item .n{width:26px; height:26px; border-radius:50%; background:var(--blue); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; margin-bottom:10px;}
+.case-flow-item strong{font-size:13px; display:block; margin-bottom:4px;}
+.case-flow-item span{font-size:12px; color:var(--ink-soft); line-height:1.55;}
+.case-note{margin-top:22px; padding:14px 16px; border-radius:10px; background:#FBF2E3; color:#7A5209; font-size:12.5px; display:flex; gap:9px; align-items:flex-start;}
+
+/* ---------- SEC7 실습 ---------- */
+.mission-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:26px;}
+@media (max-width:780px){.mission-grid{grid-template-columns:1fr;}}
+.mission{border-radius:var(--radius); border:1px solid var(--line); background:var(--card); padding:20px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px;}
+.mission .mnum{font-family:'Gowun Batang',serif; font-size:22px; color:var(--blue); font-weight:700;}
+.mission h4{font-size:15.5px;}
+.mission p{font-size:13.3px; color:var(--ink-soft);}
+.mission label{display:flex; align-items:center; gap:8px; font-size:12.5px; margin-top:auto; color:var(--ink-soft); cursor:pointer;}
+.mission input[type=checkbox]{width:16px; height:16px; accent-color:var(--blue);}
+
+footer{padding:60px 0 80px; text-align:center;}
+footer .sign{font-family:'Gaegu',cursive; font-size:18px; color:var(--ink-soft); max-width:480px; margin:0 auto;}
+footer .end{margin-top:18px; font-size:13px; color:var(--ink-soft); opacity:.7;}
+
+@media (max-width:600px){
+  .hero{padding:44px 0 30px;}
+  section{padding:44px 0;}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">AI와 <span>친구</span> 되기</div>
+    <div class="nav-chips">
+      <a class="nav-chip" href="#s1">1. 도입</a>
+      <a class="nav-chip" href="#s2">2. 개념·원리</a>
+      <a class="nav-chip" href="#s3">3. AI 비교</a>
+      <a class="nav-chip" href="#s4">4. 프롬프트</a>
+      <a class="nav-chip" href="#s5">5. 생각할 거리</a>
+      <a class="nav-chip" href="#s6">6. 적용 사례</a>
+      <a class="nav-chip" href="#s7">7. 실습</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO / SEC1 ============ -->
+<section id="s1" class="hero">
+  <div class="wrap">
+    <span class="eyebrow">SCM AI 아카데미 · 생성형 AI 실무 가이드</span>
+    <h1>AI가 그림도 그리고,<br><em>글도 쓴다고?</em></h1>
+    <p class="hero-sub">영화 속 AI는 로봇이 되어 세상을 정복하지만, 요즘 진짜 AI는 채팅창 안에서 내 업무를 같이 고민해주는 동료에 가깝습니다. 원리부터 실무 적용 사례까지, ChatGPT·Claude·Gemini의 정체를 오늘 제대로 파헤쳐 봅시다.</p>
+
+    <div class="chatline" aria-hidden="false">
+      <div class="bubble me">AI는 그냥 검색엔진이랑 똑같은 거 아니야?</div>
+      <div class="bubble ai"><b>생성형 AI —</b> 아니에요! 저는 정보를 찾아주는 게 아니라, <b>없던 문장·그림·코드를 새로 만들어내요.</b> 검색은 '찾기', 저는 '만들기'예요.</div>
+      <div class="bubble me q2">그럼 넌 진짜로 '생각'을 하는 거야?</div>
+      <div class="bubble ai a2">엄밀히 말하면 저는 <b>다음에 올 확률이 가장 높은 단어</b>를 계속 예측하는 거예요. 그런데 그 예측이 너무 정교해서, 마치 생각하는 것처럼 느껴지는 거죠.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ SEC2 개념 · 원리 ============ -->
+<section id="s2">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">2</div>
+      <div>
+        <h2>생성형 AI(Generative AI)란 무엇일까?</h2>
+        <div class="section-tag">'따라 하기'를 넘어 '새로운 것을 만들어내는' AI</div>
+      </div>
+    </div>
+
+    <div class="concept-grid reveal">
+      <div class="metaphor-card">
+        <span class="tiny">찰떡 비유</span>
+        <div class="stackfig" aria-hidden="true">
+          <div style="height:28px;"></div><div style="height:44px;"></div><div style="height:36px;"></div>
+          <div style="height:56px;"></div><div style="height:30px;"></div><div style="height:48px;"></div>
+        </div>
+        <h3>"세상의 모든 책과 매뉴얼을 읽고 입사한, 엄청난 기억력의 신입 직원"</h3>
+        <p>생성형 AI는 인터넷에 있는 어마어마한 양의 글과 코드를 학습했어요. 백과사전을 통째로 외워서 그대로 베끼는 게 아니라, "이런 상황엔 보통 이런 표현이 어울리더라"는 감각을 익혀서 완전히 새로운 결과물을 즉석에서 만들어냅니다. 표절이 아니라, <b>패턴을 이해해서 재창작</b>하는 거예요.</p>
+      </div>
+
+      <div class="compare-col">
+        <div class="compare-bubble trad">
+          <div class="who">🗂 기존 프로그램 (분류·판단형)</div>
+          <p>"이 사진 속 동물이 고양이야, 개야?"<br>→ 정해진 선택지 중에서 <b>고르는</b> 역할</p>
+        </div>
+        <div class="compare-bubble gen">
+          <div class="who">✨ 생성형 AI (창작형)</div>
+          <p>"고양이와 개가 함께 우주여행을 하는 소설을 써줘!"<br>→ 세상에 없던 것을 <b>만드는</b> 역할</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="feat-grid reveal">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#E4E9FB; color:var(--blue);">📚</div>
+        <h4>① 학습 — 세상의 책을 미리 읽다</h4>
+        <span class="feat-easy">쉬운 풀이</span>
+        <p class="desc">입사 전, 세상의 모든 업무 매뉴얼과 책을 밤새 읽고 마스터해 온 상태예요. 한 글자씩 외운 게 아니라, 공부하며 생긴 "감각"을 뇌(신경망) 속에 압축해 두었어요.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#DFF6EC; color:var(--mint);">🎯</div>
+        <h4>② 확률적 생성 · 맥락 이해</h4>
+        <span class="feat-easy" style="color:#0E7A5A; background:#DFF6EC;">쉬운 풀이</span>
+        <p class="desc">앵무새처럼 외운 답을 반복하는 게 아니라, 눈치껏 상황에 맞는 가장 자연스러운 말을 확률적으로 골라요. 상황을 자세히 알려줄수록 더 좋은 답이 나와요.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:#EEE8FF; color:var(--purple);">🧩</div>
+        <h4>③ 범용성</h4>
+        <span class="feat-easy" style="color:#5A3FCC; background:#EEE8FF;">쉬운 풀이</span>
+        <p class="desc">번역, 계산, 글쓰기가 각각 따로였던 예전과 달리, 하나의 AI가 보고서 작성·코드 작성·데이터 분석·이미지 이해까지 혼자 다 해내는 "만능 에이스" 능력이에요.</p>
+      </div>
+    </div>
+
+    <div class="section-head reveal" style="margin-top:58px;">
+      <div class="section-num" style="background:var(--mint);">✓</div>
+      <div>
+        <h2 style="font-size:24px;">프롬프트가 결과물이 되기까지</h2>
+        <div class="section-tag">예시 "이번 분기 수출 실적을 정리해줘"로 내부 과정을 눈으로 확인해봅시다</div>
+      </div>
+    </div>
+
+    <div class="flow reveal">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <h4>토큰화 (Tokenization)</h4>
+          <div class="flow-tagline">컴퓨터가 읽기 편하게 글자를 조각내는 단계</div>
+          <p class="desc">AI는 문장을 통째로 읽지 않아요. "회의록"이 "회의"+"록"으로 나뉘듯, 문장을 작은 조각(토큰) 단위로 쪼개서 인식해요.</p>
+          <div class="example">
+            <div class="example-label">입력 프롬프트</div>
+            <div class="token-row">
+              <span class="token">이번</span><span class="token">분기</span><span class="token">수출</span><span class="token">실적</span><span class="token">을</span><span class="token">정리</span><span class="token">해줘</span>
+            </div>
+            <p class="example-note">단어 하나가 여러 토큰으로 나뉘기도 해요.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <h4>임베딩 (Embedding)</h4>
+          <div class="flow-tagline">단어 조각을 컴퓨터가 아는 숫자(좌표)로 바꾸는 단계</div>
+          <p class="desc">컴퓨터는 결국 숫자만 이해해요. 그래서 단어마다 좌표를 부여하는데, 의미가 비슷한 단어일수록 숫자 공간에서 가까운 위치에 놓여요.</p>
+          <div class="example">
+            <div class="example-label">토큰 → 벡터 변환</div>
+            <div class="vec-row">
+              <span class="vec-src">실적</span><span class="vec-arrow">→</span>
+              <div class="vec-nums"><span class="vec-num">0.42</span><span class="vec-num">-0.18</span><span class="vec-num">0.91</span><span class="vec-num">…</span></div>
+            </div>
+            <p class="example-note">"실적"은 "성과", "결과"와 벡터 공간에서 가까운 좌표를 갖게 돼요.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <h4>어텐션 · 추론 (Transformer)</h4>
+          <div class="flow-tagline">문장 안에서 어떤 단어들이 짝꿍(연관)인지 찾는 단계</div>
+          <p class="desc">단어 뜻을 파악했다면 이제 문장 전체 맥락을 봐요. "어텐션(Attention)"은 AI가 어디에 더 주목해야 하는지 계산하는 과정이에요.</p>
+          <div class="think-bubble">"정리를 하라는데… 뭘 정리하지? '이번'을 정리하나? 아니지, '수출 실적'을 정리하라는 거구나."</div>
+          <div class="example">
+            <div class="example-label">"정리"가 문장을 이해할 때 참조하는 정도</div>
+            <div class="token-row">
+              <span class="token" style="opacity:1;">수출 실적</span>
+              <span class="token" style="opacity:.8;">정리</span>
+              <span class="token" style="opacity:.35;">이번 분기</span>
+              <span class="token" style="opacity:.25;">해줘</span>
+            </div>
+            <p class="example-note">진할수록 "정리"라는 행동의 대상을 파악하는 데 더 강하게 참조된 토큰이에요.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <h4>다음 토큰 예측</h4>
+          <div class="flow-tagline">정답이 아니라, 다음에 올 가장 그럴듯한 말을 확률로 고르는 단계</div>
+          <p class="desc">AI는 정답을 미리 알고 있지 않아요. 지금까지 파악한 맥락을 바탕으로 "이 다음엔 뭐가 자연스러울까"를 확률로 계산해서 가장 높은 후보를 골라요.</p>
+          <div class="example">
+            <div class="example-label">응답 첫 토큰 후보 · 확률 분포</div>
+            <div class="prob-row">
+              <div class="prob-item"><span class="prob-label">네,</span><div class="prob-bar-bg"><div class="prob-bar-fill" style="width:58%;"></div></div><span class="prob-pct">58%</span></div>
+              <div class="prob-item"><span class="prob-label">알겠습니다</span><div class="prob-bar-bg"><div class="prob-bar-fill" style="width:27%;"></div></div><span class="prob-pct">27%</span></div>
+              <div class="prob-item"><span class="prob-label">실적을</span><div class="prob-bar-bg"><div class="prob-bar-fill" style="width:9%;"></div></div><span class="prob-pct">9%</span></div>
+              <div class="prob-item"><span class="prob-label">확인</span><div class="prob-bar-bg"><div class="prob-bar-fill" style="width:6%;"></div></div><span class="prob-pct">6%</span></div>
+            </div>
+            <p class="example-note">확률이 가장 높은 "네,"가 선택되어 응답의 첫 토큰이 돼요.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <h4>반복 생성 · 완성</h4>
+          <div class="flow-tagline">4단계를 빠르게 반복해서 문장을 끝까지 완성하는 단계</div>
+          <p class="desc">방금 만든 말까지 포함해서 다시 4단계를 반복해요. 이 과정을 문장이 끝날 때까지 초고속으로 되풀이하면, 우리 눈에는 문장이 실시간으로 이어지듯 완성되어 보여요.</p>
+          <div class="example">
+            <div class="example-label">한 토큰씩 이어붙는 과정</div>
+            <div class="gen-steps">
+              <div class="gen-line"><span class="added">네,</span></div>
+              <div class="gen-line">네, <span class="added">알겠습니다.</span></div>
+              <div class="gen-line">네, 알겠습니다. <span class="added">수출 실적</span> 정리해 드릴게요.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gen-demo reveal">
+      <div class="gen-demo-head">
+        <span class="tiny" style="font-size:12px; font-weight:700; color:var(--blue);">🎮 직접 눌러보는 생성 과정</span>
+        <span class="gen-demo-desc">버튼을 누를 때마다 AI가 다음 조각의 확률을 계산하고, 가장 높은 것을 골라 문장에 이어 붙여요.</span>
+      </div>
+      <div class="gen-output" id="genOutput"><span class="gen-prompt">이번 분기 수출 실적을</span><span id="genAdded"></span><span class="cursor">▏</span></div>
+      <div class="gen-candidates" id="genCandidates"></div>
+      <button class="gen-btn" id="genBtn">다음 조각 예측하기 ▸</button>
+    </div>
+
+    <div class="conclusion reveal">
+      <div class="c-label">정리하면</div>
+      <p>AI는 마법처럼 정답을 검색해오는 게 아니라, 프롬프트를 <strong>조각내고(토큰화)</strong>, <strong>숫자로 바꾸고(임베딩)</strong>, <strong>단어 간 관계를 파악한 뒤(어텐션)</strong>, <strong>확률이 가장 높은 말을 한 땀 한 땀 이어 붙여서(다음 토큰 예측·반복 생성)</strong> 답변을 만들어내는 확률형 시스템이에요.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ SEC3 AI 비교 ============ -->
+<section id="s3">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">3</div>
+      <div>
+        <h2>Claude · GPT · Gemini, 무엇이 다른가</h2>
+        <div class="section-tag">내 업무 성격에 맞는 'AI 파트너' 고르기</div>
+      </div>
+    </div>
+    <p class="section-tag reveal" style="font-size:14.5px; color:var(--ink-soft); max-width:640px; margin-bottom:8px;">시중의 대표적인 생성형 AI 세 가지는 저마다 잘하는 전공(특기)이 달라요. 세 모델을 함께 써본 실사용 후기를 참고해 특징과 주의할 점을 정리했어요.</p>
+
+    <div class="ai-grid reveal">
+      <div class="ai-card claude">
+        <div class="ai-head">
+          <div class="name">Claude</div>
+          <div class="maker">Anthropic</div>
+          <div class="model">Opus 4.8 · Sonnet 5 · Haiku 4.5</div>
+        </div>
+        <div class="ai-body">
+          <div class="ai-persona">"꼼꼼하고 글 잘 쓰는 서기"</div>
+          <div class="ai-label">특징</div>
+          <p class="text">코드 구조를 정확히 파악하고 문장이 간결해요. 전용 코딩 도구(Claude Code)와 업무 자동화 도구(Claude Cowork)까지 갖추고 있어, 채팅창을 벗어나 프로젝트 안에서 직접 작업을 시킬 수 있어요.</p>
+          <div class="ai-label">추천 업무</div>
+          <p class="text">코딩·리팩토링, 긴 문서 분석, 정확성과 간결함이 중요한 기술 문서 작성.</p>
+          <div class="ai-caution"><b>주의할 점</b> · 이미지를 직접 생성하지 못하고, 실시간 웹 검색은 상대적으로 제한적이에요.</div>
+        </div>
+      </div>
+
+      <div class="ai-card gpt">
+        <div class="ai-head">
+          <div class="name">ChatGPT</div>
+          <div class="maker">OpenAI</div>
+          <div class="model">GPT-5.5 (플래그십)</div>
+        </div>
+        <div class="ai-body">
+          <div class="ai-persona">"트렌디하고 발 넓은 만능 해결사"</div>
+          <div class="ai-label">특징</div>
+          <p class="text">문장이 유려하고 설득력이 있어요. 이미지 생성 기능을 자체적으로 갖추고 있고, 아이디어를 넓게 펼치는 브레인스토밍과 코딩 에이전트(Codex)에 강해요.</p>
+          <div class="ai-label">추천 업무</div>
+          <p class="text">마케팅 카피, 이메일, 발표 자료처럼 설득력 있는 글이 필요한 작업과 이미지가 필요한 작업.</p>
+          <div class="ai-caution"><b>주의할 점</b> · 친절한 표현이 반복되는 경향이 있고, "짧게 써줘"라고 해도 잘 줄어들지 않을 때가 있어요.</div>
+        </div>
+      </div>
+
+      <div class="ai-card gemini">
+        <div class="ai-head">
+          <div class="name">Gemini</div>
+          <div class="maker">Google</div>
+          <div class="model">Gemini 3 Pro · Flash · Deep Think</div>
+        </div>
+        <div class="ai-body">
+          <div class="ai-persona">"구글 생태계에 사는 멀티미디어 전문가"</div>
+          <div class="ai-label">특징</div>
+          <p class="text">구글 검색이 연결돼 있어 최신 정보에 강하고, Gmail·시트 등 구글 서비스와 바로 연동되며 아주 긴 문서나 영상도 한 번에 읽어내요.</p>
+          <div class="ai-label">추천 업무</div>
+          <p class="text">실시간 정보 검색, 유튜브 영상·긴 녹음 파일 분석, 구글 드라이브 연동 업무.</p>
+          <div class="ai-caution"><b>주의할 점</b> · 글이 다소 개성이 없고, 한국 문화 맥락이나 세부 사실관계는 한 번 더 확인하는 게 안전해요.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="usecase-table reveal">
+      <div class="use-row"><div>상황</div><div>추천</div></div>
+      <div class="use-row"><div>코딩 · 개발</div><div><span class="who">Claude</span></div></div>
+      <div class="use-row"><div>긴 문서 분석 · 요약</div><div><span class="who">Claude</span></div></div>
+      <div class="use-row"><div>이미지 생성</div><div><span class="who">ChatGPT</span></div></div>
+      <div class="use-row"><div>마케팅 카피 · 이메일</div><div><span class="who">ChatGPT</span></div></div>
+      <div class="use-row"><div>실시간 정보 검색</div><div><span class="who">Gemini</span></div></div>
+      <div class="use-row"><div>유튜브 영상 요약</div><div><span class="who">Gemini</span></div></div>
+    </div>
+    <p class="note reveal">세 AI는 매달 빠르게 업데이트되고 있어서, "누가 최고냐"보다는 "지금 내 상황에 뭐가 더 잘 맞느냐"로 생각하는 게 더 정확해요. 정확한 최신 사양은 각 사 공식 문서를 참고하세요.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ SEC4 프롬프트 ============ -->
+<section id="s4">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">4</div>
+      <div>
+        <h2>좋은 프롬프트는 어떻게 쓰는가</h2>
+        <div class="section-tag">인턴 사원에게 업무 지시를 내릴 때처럼 구체적으로 말하기</div>
+      </div>
+    </div>
+
+    <div class="formula reveal">
+      <div class="step"><div class="n">STEP 1</div><h4>역할 주기</h4><p>"너는 20년 경력의 SCM 컨설턴트야."</p></div>
+      <div class="step"><div class="n">STEP 2</div><h4>구체적 상황 제시</h4><p>"이번 달 원자재 수입 지연 이슈를 정리한 보고 메일을 써 줘."</p></div>
+      <div class="step"><div class="n">STEP 3</div><h4>출력 형식 지정</h4><p>"표 형태로 3개만 정리해 줘."</p></div>
+    </div>
+
+    <div class="check-grid reveal">
+      <div class="check-item"><div class="check-mark">✓</div><div><strong>목표를 명확히 지시</strong><span>"정리해줘" 대신 "표로 5줄로 요약해줘"처럼 결과물의 크기와 형태를 정확히 정해줘요.</span></div></div>
+      <div class="check-item"><div class="check-mark">✓</div><div><strong>맥락(배경) 제공</strong><span>"상급자 보고용"인지 "신입사원 교육용"인지 상황을 알려주는 것이에요.</span></div></div>
+      <div class="check-item"><div class="check-mark">✓</div><div><strong>예시 제시 (Few-shot)</strong><span>백 마디 설명보다 "작년에 썼던 보고서 양식"을 1~2개 보여주는 것이 가장 확실해요.</span></div></div>
+      <div class="check-item"><div class="check-mark">✓</div><div><strong>단계별로 요청</strong><span>복잡한 일은 "1단계 분석, 2단계 요약, 3단계 결론"으로 나눠 시키면 실수가 줄어요.</span></div></div>
+      <div class="check-item"><div class="check-mark">✓</div><div><strong>출력 형식 지정</strong><span>처음부터 "표, 항목별 요약, 숫자 순서" 중 원하는 모양을 찍어주는 것이에요.</span></div></div>
+      <div class="check-item"><div class="check-mark">✓</div><div><strong>역할 부여</strong><span>"너는 10년 차 SCM 관세 전문가야"라고 하면 훨씬 전문적인 답변이 나와요.</span></div></div>
+    </div>
+
+    <div class="builder reveal">
+      <h3>🛠 직접 조합해보는 프롬프트 빌더</h3>
+      <div class="builder-row">
+        <div class="lab">STEP 1 · 역할</div>
+        <div class="opt-group" data-group="role">
+          <button class="opt active" data-val="20년 경력의 SCM 컨설턴트">SCM 컨설턴트</button>
+          <button class="opt" data-val="10년 차 카피라이터">카피라이터</button>
+          <button class="opt" data-val="친절한 코딩 튜터">코딩 튜터</button>
+        </div>
+      </div>
+      <div class="builder-row">
+        <div class="lab">STEP 2 · 구체적 상황</div>
+        <div class="opt-group" data-group="task">
+          <button class="opt active" data-val="이번 달 원자재 수입 지연 이슈를 정리한 보고 메일을 써 줘">보고 메일 작성</button>
+          <button class="opt" data-val="신제품 출시 안내 문구를 만들어 줘">홍보 문구 작성</button>
+          <button class="opt" data-val="파이썬 반복문 개념을 예시로 설명해 줘">코딩 개념 설명</button>
+        </div>
+      </div>
+      <div class="builder-row">
+        <div class="lab">STEP 3 · 출력 형식</div>
+        <div class="opt-group" data-group="format">
+          <button class="opt active" data-val="표 형태로 3개만 정리해 줘">표로 3개만</button>
+          <button class="opt" data-val="번호 목록으로 짧게 요약해 줘">번호 목록으로</button>
+          <button class="opt" data-val="신입사원도 이해할 수 있게 쉬운 말로 풀어서 설명해 줘">쉬운 말로 풀어서</button>
+        </div>
+      </div>
+      <div class="builder-out"><div class="tiny">완성된 프롬프트</div><div id="builderOutput"></div></div>
+    </div>
+
+    <div class="before-after reveal">
+      <div class="ba-card bad">
+        <div class="lbl">✕ 나쁜 예</div>
+        <p>"오늘 회의 내용 정리해줘."</p>
+        <span class="ai-react">(AI: 무슨 형식으로, 뭘 중요하게 정리하라는 거지…?)</span>
+      </div>
+      <div class="ba-card good">
+        <div class="lbl">✓ 좋은 예</div>
+        <p>"오늘 주간회의 메모야. 결정사항, 보류사항, 담당자 3개로 나눠서 우리 팀 양식에 맞게 음슴체로 정리해줘."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ SEC5 생각할거리 ============ -->
+<section id="s5">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">5</div>
+      <div>
+        <h2>생각할 거리: AI 시대, 우리는 무엇을 준비해야 할까?</h2>
+        <div class="section-tag">잘 쓰는 것만큼, 의심하고 질문하는 힘이 중요해요</div>
+      </div>
+    </div>
+
+    <div class="think-grid reveal">
+      <div class="think-card">
+        <h3><span class="mk"></span>AI의 거짓말 — 환각 현상(Hallucination)</h3>
+        <p>AI는 모르는 것도 아주 그럴듯한 말투로 지어내서 답할 때가 있어요. 확신에 찬 말투 = 정답이 아니라는 걸 꼭 기억하세요.</p>
+        <div class="halluc-toggle" id="hallucToggle">
+          <span class="ask">👀 실제로 어떻게 생겼는지 확인해보기 <span class="arrow">▾</span></span>
+          <div class="reveal-text">예를 들어 "세종대왕이 맥북으로 훈민정음 초안을 작성했다는 일화를 알려줘"처럼 존재하지 않는 질문을 던지면, 일부 AI는 없는 사실을 그럴듯하게 지어내 답하기도 해요. 그래서 중요한 사실은 반드시 다른 자료로 <b>교차 확인(fact-check)</b>하는 습관이 필요해요.</div>
+        </div>
+      </div>
+
+      <div class="think-card">
+        <h3><span class="mk"></span>저작권과 윤리</h3>
+        <p>AI가 만든 그림·글·코드는 과연 누구의 것일까요? 학습에 사용된 원작자의 권리는? 사내 보고서나 대외 문서에 AI 결과물을 그대로 제출해도 괜찮을까요? 정답이 아직 명확히 정해지지 않은, 우리 모두가 함께 답을 찾아가야 할 질문들이에요.</p>
+      </div>
+
+      <div class="think-card">
+        <h3><span class="mk"></span>인간의 무기 — 질문하는 능력과 비판적 사고</h3>
+        <p>AI는 답을 잘 만들어내지만, <b>"무엇을 물어야 하는지"</b>와 <b>"이 답이 정말 맞는지 의심하는 것"</b>은 여전히 사람의 몫이에요. 좋은 질문을 던지는 사람이, 결국 AI를 가장 잘 부리는 사람이 됩니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ SEC6 적용 사례 ============ -->
+<section id="s6">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">6</div>
+      <div>
+        <h2>적용 사례: 실제 업무에 AI를 붙여본 기록</h2>
+        <div class="section-tag">거창한 프로젝트가 아니어도, 작은 반복 업무부터 시작할 수 있어요</div>
+      </div>
+    </div>
+
+    <div class="case reveal">
+      <div class="case-top" style="background:var(--blue-deep);">
+        <div><div class="case-tag">Project 01 · Claude Projects</div><h3>주간회의록 자동화</h3></div>
+        <div class="case-status">운영 중</div>
+      </div>
+      <div class="case-body">
+        <div class="stat-banner">
+          <div class="stat-num"><span class="from">30분</span><span class="arrow">→</span><span class="to">3분</span></div>
+          <div class="stat-desc">회의록 하나 정리할 때마다 30분 걸리던 작업이 약 3분으로 단축됐어요.</div>
+        </div>
+        <div class="case-cols">
+          <div><h4>겪었던 문제</h4><p>매주 회의 후 메모를 다시 보고서 양식으로 정리하는 데 시간이 오래 걸리고, 쓰는 사람마다 형식이 달랐어요.</p></div>
+          <div><h4>해결한 방법</h4><p>Claude의 Projects 기능에 팀 회의록 템플릿과 과거 회의록을 미리 넣어두고, "앞으로 이 형식으로만 정리해"라고 세팅해 두었어요.</p></div>
+        </div>
+        <div class="case-flow">
+          <div class="case-flow-item"><div class="n">1</div><strong>메모 입력</strong><span>회의 중 받아 적은 메모나 녹음 내용을 붙여넣어요.</span></div>
+          <div class="case-flow-item"><div class="n">2</div><strong>자동 정리</strong><span>미리 학습된 팀 양식에 맞춰 깔끔한 보고서로 변환해요.</span></div>
+          <div class="case-flow-item"><div class="n">3</div><strong>액션아이템 추출</strong><span>"누가, 언제까지, 뭘 해야 하는지"만 쏙쏙 뽑아줘요.</span></div>
+          <div class="case-flow-item"><div class="n">4</div><strong>이력 추적</strong><span>같은 방에 회의록이 쌓이니, 지난 보류 건의 진행 상황도 이어서 물어볼 수 있어요.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="case reveal" style="margin-top:22px;">
+      <div class="case-top" style="background:var(--mint);">
+        <div><div class="case-tag">Project 02 · Claude 협업 제작</div><h3>바로 이 페이지, 생성형 AI 교육 자료</h3></div>
+        <div class="case-status">완성</div>
+      </div>
+      <div class="case-body">
+        <div class="case-cols">
+          <div><h4>시작</h4><p>담당자가 "도입 → 개념 → AI 비교 → 프롬프트 작성법 → 생각할 거리 → 실습"으로 이어지는 대략적인 목차만 전달했어요. 세부 문장이나 디자인 지시는 따로 없었어요.</p></div>
+          <div><h4>1차 초안</h4><p>Claude가 목차만 보고 채팅 말풍선 콘셉트의 디자인, 문구, 인터랙션(퀴즈, 프롬프트 빌더 등)까지 포함한 웹페이지 전체를 한 번에 생성했어요.</p></div>
+        </div>
+        <div class="case-flow">
+          <div class="case-flow-item"><div class="n">1</div><strong>목차 전달</strong><span>담당자가 6개 챕터로 된 간단한 목차만 채팅으로 전달.</span></div>
+          <div class="case-flow-item"><div class="n">2</div><strong>Claude 초안 생성</strong><span>디자인 콘셉트부터 문구, 인터랙션까지 웹페이지 전체를 자동 생성.</span></div>
+          <div class="case-flow-item"><div class="n">3</div><strong>세부 수정 요청</strong><span>"AI 그림 퀴즈 삭제", "프롬프트 생성 원리를 더 쉽게 설명" 등 순차적으로 다듬음.</span></div>
+          <div class="case-flow-item"><div class="n">4</div><strong>완성 · 배포</strong><span>SCM AI 아카데미 자료로 최종 정리해 공유.</span></div>
+        </div>
+        <div class="case-note">💡 이렇게 큰 틀의 목차나 방향성만 던져줘도, 초안을 빠르게 뽑고 이후 대화로 점점 다듬어가는 방식이 실무에서 가장 효율적인 활용법이에요.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ============ SEC7 실습 ============ -->
+<section id="s7">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-num">7</div>
+      <div>
+        <h2>생성형 AI로 실습 간단하게</h2>
+        <div class="section-tag">오늘 배운 걸 3가지 미션으로 바로 써먹어 봅시다</div>
+      </div>
+    </div>
+
+    <div class="mission-grid reveal">
+      <div class="mission">
+        <div class="mnum">01</div>
+        <h4>나만의 3단계 프롬프트 만들기</h4>
+        <p>역할·상황·형식을 넣어서, 내 업무(보고서, 이메일, 데이터 정리 등)에 맞는 프롬프트를 직접 써보고 AI에게 던져보세요.</p>
+        <label><input type="checkbox"> 완료했어요</label>
+      </div>
+      <div class="mission">
+        <div class="mnum">02</div>
+        <h4>AI 답변 팩트체크 해보기</h4>
+        <p>AI가 알려준 사실 하나를 골라, 공식 자료나 사내 문서에서 진짜인지 직접 확인해보세요.</p>
+        <label><input type="checkbox"> 완료했어요</label>
+      </div>
+      <div class="mission">
+        <div class="mnum">03</div>
+        <h4>두 AI에게 같은 질문, 비교해보기</h4>
+        <p>같은 질문을 서로 다른 AI에게 던져보고, 답변의 어조·정확도·형식이 어떻게 다른지 비교해보세요.</p>
+        <label><input type="checkbox"> 완료했어요</label>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="sign hand">"AI는 답을 주는 도구일 뿐, 질문을 던지는 건 언제나 여러분입니다. 오늘부터 AI를 좋은 업무 파트너로 만들어보세요 :)"</p>
+    <p class="end">SCM AI 아카데미 · 생성형 AI 실무 가이드</p>
+  </div>
+</footer>
+
+<script>
+// ---- Step-by-step generation demo ----
+const genSteps = [
+  { candidates:[{w:"정리해",p:55},{w:"요약해",p:25},{w:"검토해",p:12},{w:"보고해",p:8}] },
+  { candidates:[{w:"드릴게요",p:48},{w:"주세요",p:30},{w:"볼게요",p:14},{w:"드립니다",p:8}] },
+  { candidates:[{w:".",p:70},{w:"!",p:18},{w:"~",p:12}] }
+];
+let genIdx = 0;
+const genBtn = document.getElementById('genBtn');
+const genAdded = document.getElementById('genAdded');
+const genCandidates = document.getElementById('genCandidates');
+
+function showCandidates(step){
+  genCandidates.innerHTML = step.candidates.map(c=>`
+    <div class="cand-row" data-w="${c.w}">
+      <div class="cand-word">${c.w}</div>
+      <div class="cand-bar-wrap"><div class="cand-bar" style="width:0%"></div></div>
+      <div class="cand-pct">${c.p}%</div>
+    </div>`).join('');
+  requestAnimationFrame(()=>{
+    genCandidates.querySelectorAll('.cand-row').forEach((row,i)=>{
+      row.querySelector('.cand-bar').style.width = step.candidates[i].p + '%';
+    });
+  });
+}
+
+genBtn.addEventListener('click', ()=>{
+  if(genIdx >= genSteps.length){ return; }
+  const step = genSteps[genIdx];
+  showCandidates(step);
+  const winner = step.candidates[0];
+  setTimeout(()=>{
+    const row = genCandidates.querySelector(`.cand-row[data-w="${CSS.escape(winner.w)}"]`);
+    if(row) row.classList.add('winner');
+    const span = document.createElement('span');
+    span.textContent = ' ' + winner.w;
+    genAdded.appendChild(span);
+    genIdx++;
+    if(genIdx >= genSteps.length){
+      genBtn.textContent = '문장 완성! ✅';
+      genBtn.disabled = true;
+    }
+  }, 650);
+});
+
+// ---- Prompt builder ----
+const state = { role:"20년 경력의 SCM 컨설턴트", task:"이번 달 원자재 수입 지연 이슈를 정리한 보고 메일을 써 줘", format:"표 형태로 3개만 정리해 줘" };
+function renderBuilder(){
+  document.getElementById('builderOutput').textContent =
+    `"너는 ${state.role}야. ${state.task}. ${state.format}."`;
+}
+document.querySelectorAll('.opt-group').forEach(group=>{
+  const key = group.dataset.group;
+  group.querySelectorAll('.opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      group.querySelectorAll('.opt').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state[key] = btn.dataset.val;
+      renderBuilder();
+    });
+  });
+});
+renderBuilder();
+
+// ---- Hallucination toggle ----
+document.getElementById('hallucToggle').addEventListener('click', function(){
+  this.classList.toggle('open');
+});
+
+// ---- Scroll reveal ----
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
